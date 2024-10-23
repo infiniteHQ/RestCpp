@@ -37,7 +37,6 @@ endif()
 
 find_package(Threads REQUIRED)
 find_package(CURL REQUIRED)
-find_package(jsoncpp)
 
 option(BUILD_SHARED_LIBS "Build shared library." YES)
 if(COMPILE_TYPE STREQUAL "SHARED")
@@ -137,13 +136,9 @@ install(
     ${CMAKE_INSTALL_PREFIX}/${CONFIG_INSTALL_DIR}
 )
 
-if(Gtest_FOUND AND jsoncpp_FOUND)
-
 enable_testing()
 
-
 add_executable(test-program
-  vendor/jsoncpp-0.10.5/dist/jsoncpp.cpp
   test/tests.cpp
   test/test_restclient.cc
   test/test_connection.cc
@@ -151,7 +146,6 @@ add_executable(test-program
 )
 target_include_directories(test-program
   PRIVATE include
-  PRIVATE vendor/jsoncpp-0.10.5/dist
   PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/include")
 
 target_link_libraries(test-program
@@ -162,9 +156,6 @@ gtest_discover_tests(test-program
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   EXTRA_ARGS -VV
 )
-
-endif()
-
 
 # TODO: Setup ctest here for valgrind and CI
 
