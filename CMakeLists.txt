@@ -3,11 +3,7 @@ cmake_minimum_required(VERSION 3.12.0)
 
 project(restclient-cpp
   VERSION 0.5.2
-  DESCRIPTION "REST client for C++"
-  HOMEPAGE_URL "http://code.mrtazz.com/restclient-cpp"
 )
-set(restclient-cpp_VENDOR "d@unwiredcouch.com")
-set(PROJECT_VENDOR "${restclient-cpp_VENDOR}")
 
 message(STATUS "Configured for: ${CMAKE_BUILD_TYPE}")
 add_custom_target(BeginMessage ALL
@@ -36,11 +32,12 @@ include(GoogleTest)
 endif()
 
 find_package(Threads REQUIRED)
+find_package(OpenSSL REQUIRED)
 find_package(CURL REQUIRED)
 
-option(BUILD_SHARED_LIBS "Build shared library." YES)
+option(BUILD_SHARED_LIBS "Build shared library." NO)
 if(COMPILE_TYPE STREQUAL "SHARED")
-  set(BUILD_SHARED_LIBS YES)
+  set(BUILD_SHARED_LIBS NO)
 endif()
 
 add_library(restclient-cpp
@@ -49,6 +46,10 @@ add_library(restclient-cpp
   source/helpers.cc
 )
 set_property(TARGET restclient-cpp PROPERTY SOVERSION 2.1.1)
+
+if(WIN32)
+  target_compile_definitions(restclient-cpp PUBLIC CURL_STATICLIB)
+endif()
 
 target_compile_features(restclient-cpp PUBLIC cxx_std_11)
 
@@ -82,6 +83,7 @@ target_include_directories(restclient-cpp PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/i
 target_link_libraries(restclient-cpp
   PUBLIC CURL::libcurl
   PUBLIC Threads::Threads
+  PUBLIC OpenSSL::SSL OpenSSL::Crypto
 )
 
 include(GNUInstallDirs)
@@ -156,11 +158,6 @@ gtest_discover_tests(test-program
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   EXTRA_ARGS -VV
 )
-
-# TODO: Setup ctest here for valgrind and CI
-
-# TODO: Setup cpack here for automatic packaging.
-#       Note most of the work is already done above due to use of properties and install commands.
 
 include(FeatureSummary)
 feature_summary(WHAT ALL)
